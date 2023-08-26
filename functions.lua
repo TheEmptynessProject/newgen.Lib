@@ -1,3 +1,4 @@
+--would appreciate credits to TheEmptynessProject if you decide to use some of these functions
 local custom = {}
 function custom.protect(instanceToProtect, parent)
     local name = instanceToProtect.Name
@@ -404,7 +405,7 @@ function custom.hasProperty(obj, property)
         return false
     end
 end
-function custom.getCenterPosition(sizeX, sizeY)
+function custom.getCenterPosition(sizeX, sizeY) --except this one, i found this in a random script
     return UDim2.new(0.5, -(sizeX / 2), 0.5, -(sizeY / 2))
 end
 return custom
