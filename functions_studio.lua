@@ -77,166 +77,151 @@ function custom.animate(obj, info, properties, callback)
         anim.Completed:Connect(callback)
     end
 end
-local function getModifiedColors(baseColor, nColors, mode)
+function custom.getModifiedColors(baseColor, nColors, mode)
     local colors = {}
-    local timing = 0
     local h, s, l = Color3.toHSV(baseColor)
+    local hues = {}  -- This will hold the computed hue values
 
     if mode == "analogous" then
-        for _ = 1, math.round(nColors / 2) do
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h - 0.1) % 1, s, l)))
-            timing = timing + 1 / nColors
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h + 0.1) % 1, s, l)))
-            if math.round(nColors / 2) > 1 then
-                timing = timing + 1 / nColors
-            end
+        local iterations = math.round(nColors / 2)
+        for i = 1, iterations do
+            table.insert(hues, (h - 0.1) % 1)
+            table.insert(hues, (h + 0.1) % 1)
         end
+
     elseif mode == "triadic" then
-        for _ = 1, math.round(nColors / 2) do
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h - 0.33) % 1, s, l)))
-            timing = timing + 1 / nColors
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h + 0.33) % 1, s, l)))
-            if math.round(nColors / 2) > 1 then
-                timing = timing + 1 / nColors
-            end
+        local iterations = math.round(nColors / 2)
+        for i = 1, iterations do
+            table.insert(hues, (h - 0.33) % 1)
+            table.insert(hues, (h + 0.33) % 1)
         end
+
     elseif mode == "square" then
-        for _ = 1, math.round(nColors / 3) do
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h + 0.25) % 1, s, l)))
-            timing = timing + 1 / (nColors - 1)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h + 0.5) % 1, s, l)))
-            timing = timing + 1 / (nColors - 1)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h + 0.75) % 1, s, l)))
-            if math.round(nColors / 3) > 1 then
-                timing = timing + 1 / nColors
-            end
+        local iterations = math.round(nColors / 3)
+        for i = 1, iterations do
+            table.insert(hues, (h + 0.25) % 1)
+            table.insert(hues, (h + 0.5)  % 1)
+            table.insert(hues, (h + 0.75) % 1)
         end
+
     elseif mode == "tetradic" then
-        for _ = 1, math.round(nColors / 3) do
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h + 0.16) % 1, s, l)))
-            timing = timing + 1 / (nColors - 1)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h + 0.5) % 1, s, l)))
-            timing = timing + 1 / (nColors - 1)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV((h + 0.66) % 1, s, l)))
-            if math.round(nColors / 3) > 1 then
-                timing = timing + 1 / nColors
-            end
+        local iterations = math.round(nColors / 3)
+        for i = 1, iterations do
+            table.insert(hues, (h + 0.16) % 1)
+            table.insert(hues, (h + 0.5)  % 1)
+            table.insert(hues, (h + 0.66) % 1)
         end
+
     elseif mode == "complementary" then
         for i = 1, nColors do
             h = (h + 0.5) % 1
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
-            timing = timing + 1 / (nColors - 1)
+            table.insert(hues, h)
         end
+
     elseif mode == "split_complementary" then
         for i = 1, nColors do
-            h = (h + 0.4 + (0.16 * (i - 1))) % 1
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
-            timing = timing + 1 / (nColors - 1)
+            h = (h + 0.4 + 0.16 * (i - 1)) % 1
+            table.insert(hues, h)
         end
+
     elseif mode == "split_complementary2" then
         for i = 1, nColors do
             h = (h + 0.4 + (0.16 * (i - 1)) % 2) % 1
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
-            timing = timing + 1 / (nColors - 1)
+            table.insert(hues, h)
         end
+
     elseif mode == "rgb" then
         for i = 1, nColors do
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
+            table.insert(hues, h)
             h = (h + 1 / nColors) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "custom1" then
         for i = 1, nColors do
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
+            table.insert(hues, h)
             h = (h + 1 / (i + 1)) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "logisticmap" then
         local r = 3.8
         local x = 0.2
         for i = 1, nColors do
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
+            table.insert(hues, h)
             h = (h + x) % 1
             x = r * x * (1 - x)
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "sinusoidal" then
         for i = 1, nColors do
+            table.insert(hues, h)
             local factor = math.sin(h * math.pi * 2) + math.cos(h * math.pi * 2)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "quadratic" then
         for i = 1, nColors do
+            table.insert(hues, h)
             local factor = h ^ 2
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "cubic" then
         for i = 1, nColors do
+            table.insert(hues, h)
             local factor = h ^ 3
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "sawtooth" then
         for i = 1, nColors do
-            local factor = h - math.floor(h)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
+            table.insert(hues, h)
+            local factor = h
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "exponential" then
         for i = 1, nColors do
+            table.insert(hues, h)
             local factor = math.exp(h)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "logarithmic" then
         for i = 1, nColors do
+            table.insert(hues, h)
             local factor = math.log(h + 1)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "tentvariation" then
         for i = 1, nColors do
-            local factor = h
-            if h > 0.5 then
-                factor = 1 - h
-            end
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
+            table.insert(hues, h)
+            local factor = (h > 0.5) and (1 - h) or h
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "inversesquare" then
         for i = 1, nColors do
+            table.insert(hues, h)
             local factor = 1 / (h ^ 2 + 1)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
+
     elseif mode == "horseshoe" then
         for i = 1, nColors do
+            table.insert(hues, h)
             local factor = h * (2 - h)
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
             h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
         end
-    elseif mode == "piecewiselinear" then
-        for i = 1, nColors do
-            local factor = h
-            if h > 0.5 then
-                factor = 1 - h
-            end
-            table.insert(colors, ColorSequenceKeypoint.new(timing, Color3.fromHSV(h, s, l)))
-            h = (h + factor * 0.1) % 1
-            timing = timing + 1 / (nColors - 1)
-        end
+
+    else
+        error("Unknown mode: " .. tostring(mode))
+    end
+
+    local total = #hues
+    for i, hue in ipairs(hues) do
+        local t = (total > 1) and ((i - 1) / (total - 1)) or 0
+        table.insert(colors, ColorSequenceKeypoint.new(t, Color3.fromHSV(hue, s, l)))
     end
 
     return colors
